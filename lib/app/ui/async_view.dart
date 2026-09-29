@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'console_widgets.dart';
+import '../theme/console_theme.dart';
+import 'console_panel.dart';
+import 'status_pill.dart';
 
 /// AsyncValue 를 로딩·에러·데이터로 그리는 공통 위젯.
 class AsyncView<T> extends StatelessWidget {

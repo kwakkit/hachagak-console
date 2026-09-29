@@ -23,14 +23,24 @@ flutter build web --dart-define-from-file=dart_defines/local.json
 
 ## 코드 규칙
 
-- 구조: `lib/app/`(MaterialApp·인증 게이트·공통 위젯) · `lib/core/`(env, supabase) · `lib/features/<name>/`.
+- 구조: `lib/app/`(`app.dart` + `gate/`(인증 게이트·로딩·안내 화면)·`theme/`(테마·`themeModeProvider`)·
+  `ui/`(공통 위젯)) · `lib/core/`(env, supabase) · `lib/features/<name>/`.
+- **파일당 타입 1개 (하차각과 같은 규칙).** class/enum/mixin 은 파일 하나에 하나, private 보조 위젯도
+  public 으로 두고 `<page>/<name>.dart` 에 분리해 `import` 한다(예: `notices_page/notice_row.dart`).
+  예외: `StatefulWidget` 의 `State` 는 private 로 위젯과 같은 파일. 이름이 Flutter 내장과 겹치면 접두어
+  (`DashboardTable`). 모델(`notice.dart`·`feedback_item.dart` 등)은 페이지 옆에 두고 페이지 파일이 `export`
+  해 기존 import 경로 유지. provider·포맷터 같은 최상위 값은 관련 타입/페이지 파일에.
+- **Supabase 호출은 `<feature>_repository.dart` 에만.** 저장소는 `SupabaseClient` 를 받는 클래스 +
+  같은 파일의 `<feature>RepositoryProvider`(테스트에서 override). 페이지의 `FutureProvider` 는 저장소를
+  `watch` 해 조회만 위임, 위젯의 쓰기는 `ref.read(...Provider).save/update/delete`. 위젯·페이지에서
+  `db.from(...)` 직접 호출 금지(예외: `core/supabase.dart` 의 인증·관리자 확인).
 - 상태관리 Riverpod 3 (`FutureProvider.autoDispose` + 쓰기 후 `ref.invalidate`). 코드 생성 안 씀.
-- 비동기 화면은 `AsyncView`, 쓰기 작업은 `runWithSnack` (`lib/app/async_view.dart`).
-- 페이지 공통 레이아웃 `PageScaffold(title, eyebrow)` (`lib/features/shell/console_shell.dart`).
+- 비동기 화면은 `AsyncView`, 쓰기 작업은 `runWithSnack` (`lib/app/ui/async_view.dart`, 배럴에 포함).
+- 페이지 공통 레이아웃 `PageScaffold(title, eyebrow)` (`lib/app/ui/page_scaffold.dart`, `wideBreakpoint` 720).
 - **디자인 = 하차각 "관제실 콘솔"** — `lib/app/theme/`(`ConsolePalette` 라이트=청사진·다크=야간 관제실,
-  `ConsoleFonts` Orbit/IBM Plex Sans KR/Mono, `consoleTheme`) + `lib/app/console_widgets.dart`
-  (`ConsoleBackdrop`·`ConsolePanel`·`ConsoleEyebrow`·`StatusPill`·`BracketFrame`·`EmptyState`, `themeModeProvider`
-  기본 라이트). 색은 의미 있는 곳에만: 브랜드 보라 `accent`, 상태 `ok`/`warn`/`alert`. 카드 대신 `ConsolePanel`.
+  `ConsoleFonts` Orbit/IBM Plex Sans KR/Mono, `consoleTheme`) + `lib/app/ui/` 위젯들
+  (`ConsoleBackdrop`·`ConsolePanel`·`ConsoleEyebrow`·`ConsoleDot`·`StatusPill`·`BracketFrame`·`EmptyState`·
+  `PageScaffold`, `themeModeProvider` 기본 라이트). 화면은 배럴 `lib/app/console_widgets.dart` 하나만 import. 색은 의미 있는 곳에만: 브랜드 보라 `accent`, 상태 `ok`/`warn`/`alert`. 카드 대신 `ConsolePanel`.
   한글 폰트는 웹 용량 때문에 KS X 1001 2,350자 서브셋(`assets/fonts/`), mono 스타일은 한글 폴백 지정.
 - 키는 `--dart-define-from-file` 로 주입, `dart_defines/local.json` 은 git 제외.
   **Supabase secret key 는 앱·콘솔 어디에도 넣지 않는다** (Publishable key 만).

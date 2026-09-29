@@ -1,78 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
-import '../../app/async_view.dart';
 import '../../app/console_widgets.dart';
-import '../../core/env.dart';
-import '../../core/supabase.dart';
-import '../shell/console_shell.dart';
+import 'feedback_filter.dart';
+import 'feedback_item.dart';
+import 'feedback_page/feedback_card.dart';
+import 'feedback_repository.dart';
+import 'feedback_status.dart';
 
-enum FeedbackStatus {
-  newOne('new', '새 제보'),
-  checking('checking', '확인 중'),
-  done('done', '완료');
+export 'feedback_filter.dart';
+export 'feedback_item.dart';
+export 'feedback_repository.dart';
+export 'feedback_status.dart';
 
-  const FeedbackStatus(this.value, this.label);
-  final String value;
-  final String label;
-
-  static FeedbackStatus parse(String v) =>
-      values.firstWhere((s) => s.value == v, orElse: () => newOne);
-
-  Color color(ConsolePalette c) => switch (this) {
-    newOne => c.alert,
-    checking => c.warn,
-    done => c.ok,
-  };
-}
-
-const _categoryLabels = {'bug': '오류', 'idea': '제안', 'etc': '기타'};
-
-class FeedbackItem {
-  FeedbackItem.fromRow(Map<String, dynamic> r)
-    : id = r['id'] as int,
-      category = r['category'] as String,
-      message = r['message'] as String,
-      status = FeedbackStatus.parse(r['status'] as String),
-      adminNote = r['admin_note'] as String?,
-      appVersion = r['app_version'] as String?,
-      os = r['os'] as String?,
-      createdAt = DateTime.parse(r['created_at'] as String).toLocal();
-
-  final int id;
-  final String category;
-  final String message;
-  final FeedbackStatus status;
-  final String? adminNote;
-  final String? appVersion;
-  final String? os;
-  final DateTime createdAt;
-}
-
-/// null = 전체.
-final feedbackFilterProvider = NotifierProvider<_Filter, FeedbackStatus?>(
-  _Filter.new,
+final feedbackProvider = FutureProvider.autoDispose<List<FeedbackItem>>(
+  (ref) => ref
+      .watch(feedbackRepositoryProvider)
+      .fetch(status: ref.watch(feedbackFilterProvider)),
 );
-
-class _Filter extends Notifier<FeedbackStatus?> {
-  @override
-  FeedbackStatus? build() => FeedbackStatus.newOne;
-
-  void set(FeedbackStatus? v) => state = v;
-}
-
-final feedbackProvider = FutureProvider.autoDispose<List<FeedbackItem>>((
-  ref,
-) async {
-  final filter = ref.watch(feedbackFilterProvider);
-  var q = db.from('feedback').select().eq('app', currentApp);
-  if (filter != null) q = q.eq('status', filter.value);
-  final rows = await q.order('created_at', ascending: false).limit(200);
-  return rows.map(FeedbackItem.fromRow).toList();
-});
-
-final _fmt = DateFormat('MM.dd HH:mm', 'ko');
 
 class FeedbackPage extends ConsumerWidget {
   const FeedbackPage({super.key});
@@ -108,164 +53,11 @@ class FeedbackPage extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 32),
                 itemCount: items.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
-                itemBuilder: (_, i) => _FeedbackCard(
+                itemBuilder: (_, i) => FeedbackCard(
                   item: items[i],
                   onChanged: () => ref.invalidate(feedbackProvider),
                 ),
               ),
-      ),
-    );
-  }
-}
-
-class _FeedbackCard extends StatefulWidget {
-  const _FeedbackCard({required this.item, required this.onChanged});
-
-  final FeedbackItem item;
-  final VoidCallback onChanged;
-
-  @override
-  State<_FeedbackCard> createState() => _FeedbackCardState();
-}
-
-class _FeedbackCardState extends State<_FeedbackCard> {
-  late final _note = TextEditingController(text: widget.item.adminNote);
-  late FeedbackStatus _status = widget.item.status;
-
-  @override
-  void dispose() {
-    _note.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    final ok = await runWithSnack(
-      context,
-      () => db
-          .from('feedback')
-          .update({
-            'status': _status.value,
-            'admin_note': _note.text.trim().isEmpty ? null : _note.text.trim(),
-          })
-          .eq('id', widget.item.id),
-      success: '저장했습니다.',
-    );
-    if (ok) widget.onChanged();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.console;
-    final item = widget.item;
-    final meta = [
-      _fmt.format(item.createdAt),
-      if (item.appVersion != null) 'v${item.appVersion}',
-      if (item.os != null) item.os!,
-    ].join('  ·  ');
-
-    return ConsolePanel(
-      padding: EdgeInsets.zero,
-      borderColor: item.status == FeedbackStatus.newOne
-          ? c.alert.withValues(alpha: 0.35)
-          : null,
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.fromLTRB(18, 8, 14, 8),
-        title: Row(
-          children: [
-            _CategoryTag(_categoryLabels[item.category] ?? item.category),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                item.message,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: ConsoleFonts.label.copyWith(
-                  color: c.textHi,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ),
-          ],
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 6),
-          child: Text(
-            meta,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: ConsoleFonts.monoSmall.copyWith(
-              color: c.chromeDim,
-              fontSize: 11,
-            ),
-          ),
-        ),
-        trailing: StatusPill(item.status.label, color: item.status.color(c)),
-        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
-        expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Divider(color: c.hairline),
-          const SizedBox(height: 14),
-          SelectableText(
-            item.message,
-            style: ConsoleFonts.body13.copyWith(
-              color: c.textHi,
-              fontSize: 14,
-              height: 1.6,
-            ),
-          ),
-          const SizedBox(height: 18),
-          TextField(
-            controller: _note,
-            decoration: const InputDecoration(labelText: '관리자 메모'),
-            maxLines: 3,
-            minLines: 1,
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              SegmentedButton<FeedbackStatus>(
-                segments: [
-                  for (final s in FeedbackStatus.values)
-                    ButtonSegment(value: s, label: Text(s.label)),
-                ],
-                selected: {_status},
-                showSelectedIcon: false,
-                onSelectionChanged: (s) => setState(() => _status = s.first),
-              ),
-              FilledButton(onPressed: _save, child: const Text('저장')),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CategoryTag extends StatelessWidget {
-  const _CategoryTag(this.label);
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.console;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: c.panel2,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: c.hairline),
-      ),
-      child: Text(
-        label,
-        style: ConsoleFonts.eyebrow.copyWith(
-          color: c.chrome,
-          letterSpacing: 0.6,
-        ),
       ),
     );
   }

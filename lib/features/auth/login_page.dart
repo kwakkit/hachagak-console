@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../app/console_widgets.dart';
 import '../../core/supabase.dart';
+import 'login_page/login_wordmark.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -54,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const _Wordmark(),
+                  const LoginWordmark(),
                   const SizedBox(height: 28),
                   BracketFrame(
                     child: ConsolePanel(
@@ -117,27 +118,6 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _Wordmark extends StatelessWidget {
-  const _Wordmark();
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.console;
-    return Column(
-      children: [
-        Icon(Icons.location_pin, size: 32, color: c.accent),
-        const SizedBox(height: 12),
-        Text(
-          '하차각 콘솔',
-          style: ConsoleFonts.pageTitle.copyWith(color: c.textHi, fontSize: 26),
-        ),
-        const SizedBox(height: 6),
-        ConsoleEyebrow('Hachagak · Operations Console', color: c.chrome),
-      ],
     );
   }
 }

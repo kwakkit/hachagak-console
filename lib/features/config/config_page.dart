@@ -3,42 +3,20 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../app/async_view.dart';
 import '../../app/console_widgets.dart';
-import '../../core/env.dart';
-import '../../core/supabase.dart';
-import '../shell/console_shell.dart';
+import 'config_entry.dart';
+import 'config_page/entry_layout.dart';
+import 'config_page/text_entry.dart';
+import 'config_repository.dart';
 
-class ConfigEntry {
-  ConfigEntry(this.key, this.value, this.description);
+export 'config_entry.dart';
+export 'config_repository.dart';
 
-  factory ConfigEntry.fromRow(Map<String, dynamic> r) =>
-      ConfigEntry(r['key'] as String, r['value'], r['description'] as String?);
-
-  final String key;
-  final Object? value;
-  final String? description;
-}
-
-final configProvider = FutureProvider.autoDispose<List<ConfigEntry>>((
-  ref,
-) async {
-  final rows = await db
-      .from('app_config')
-      .select()
-      .eq('app', currentApp)
-      .order('key');
-  return rows.map(ConfigEntry.fromRow).toList();
-});
+final configProvider = FutureProvider.autoDispose<List<ConfigEntry>>(
+  (ref) => ref.watch(configRepositoryProvider).fetchAll(),
+);
 
 final _semver = RegExp(r'^\d+\.\d+\.\d+$');
-
-/// 알려진 키의 사람용 이름. 모르는 키는 키 그대로.
-const _titles = {
-  'min_version': '최소 지원 버전',
-  'latest_version': '최신 버전',
-  'realtime_enabled': '실시간 열차 매칭 (방법 A)',
-};
 
 class ConfigPage extends ConsumerWidget {
   const ConfigPage({super.key});
@@ -48,11 +26,7 @@ class ConfigPage extends ConsumerWidget {
     Future<void> save(String key, Object value) async {
       await runWithSnack(
         context,
-        () => db
-            .from('app_config')
-            .update({'value': value})
-            .eq('app', currentApp)
-            .eq('key', key),
+        () => ref.read(configRepositoryProvider).update(key, value),
         success: '$key 저장됨',
       );
       ref.invalidate(configProvider);
@@ -73,7 +47,7 @@ class ConfigPage extends ConsumerWidget {
             return ConsolePanel(
               padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
               child: switch (e.value) {
-                final bool v => _EntryLayout(
+                final bool v => EntryLayout(
                   entry: e,
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -94,13 +68,13 @@ class ConfigPage extends ConsumerWidget {
                     ],
                   ),
                 ),
-                final String v when e.key.endsWith('_version') => _TextEntry(
+                final String v when e.key.endsWith('_version') => TextEntry(
                   entry: e,
                   initial: v,
                   validator: (s) => _semver.hasMatch(s) ? null : '형식: 0.3.0',
                   onSave: (s) => save(e.key, s),
                 ),
-                final v => _TextEntry(
+                final v => TextEntry(
                   entry: e,
                   initial: jsonEncode(v),
                   validator: (s) {
@@ -118,58 +92,6 @@ class ConfigPage extends ConsumerWidget {
           },
         ),
       ),
-    );
-  }
-}
-
-/// 왼쪽: 이름 + mono 키 + 설명, 오른쪽: 컨트롤. 좁으면 아래로 내린다.
-class _EntryLayout extends StatelessWidget {
-  const _EntryLayout({required this.entry, required this.trailing});
-
-  final ConfigEntry entry;
-  final Widget trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.console;
-    final info = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          _titles[entry.key] ?? entry.key,
-          style: ConsoleFonts.label.copyWith(color: c.textHi),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          entry.key,
-          style: ConsoleFonts.monoSmall.copyWith(color: c.chromeDim),
-        ),
-        if (entry.description != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            entry.description!,
-            style: ConsoleFonts.body13.copyWith(color: c.textLo),
-          ),
-        ],
-      ],
-    );
-    return LayoutBuilder(
-      builder: (context, box) => box.maxWidth >= 560
-          ? Row(
-              children: [
-                Expanded(child: info),
-                const SizedBox(width: 16),
-                trailing,
-              ],
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                info,
-                const SizedBox(height: 12),
-                Align(alignment: Alignment.centerRight, child: trailing),
-              ],
-            ),
     );
   }
 }
@@ -194,71 +116,3 @@ Future<bool> _confirmOn(BuildContext context, String key) async =>
       ),
     ) ??
     false;
-
-class _TextEntry extends StatefulWidget {
-  const _TextEntry({
-    required this.entry,
-    required this.initial,
-    required this.validator,
-    required this.onSave,
-  });
-
-  final ConfigEntry entry;
-  final String initial;
-  final String? Function(String) validator;
-  final Future<void> Function(String) onSave;
-
-  @override
-  State<_TextEntry> createState() => _TextEntryState();
-}
-
-class _TextEntryState extends State<_TextEntry> {
-  late final _c = TextEditingController(text: widget.initial);
-  String? _error;
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final dirty = _c.text != widget.initial;
-    return _EntryLayout(
-      entry: widget.entry,
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 160,
-            child: TextField(
-              controller: _c,
-              style: ConsoleFonts.monoSmall.copyWith(
-                fontSize: 14,
-                color: context.console.textHi,
-              ),
-              decoration: InputDecoration(errorText: _error),
-              onChanged: (_) => setState(() => _error = null),
-            ),
-          ),
-          const SizedBox(width: 8),
-          FilledButton(
-            onPressed: dirty
-                ? () {
-                    final err = widget.validator(_c.text.trim());
-                    if (err != null) {
-                      setState(() => _error = err);
-                    } else {
-                      widget.onSave(_c.text.trim());
-                    }
-                  }
-                : null,
-            child: const Text('저장'),
-          ),
-        ],
-      ),
-    );
-  }
-}

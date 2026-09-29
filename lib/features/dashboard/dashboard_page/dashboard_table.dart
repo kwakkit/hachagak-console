@@ -1,0 +1,64 @@
+import 'package:flutter/material.dart';
+
+import '../../../app/console_widgets.dart';
+import '../daily_stat.dart';
+import 'dashboard_formats.dart';
+
+/// 최근 14일 일별 표 — 실시간/폴백은 색으로 구분.
+class DashboardTable extends StatelessWidget {
+  const DashboardTable(this.days, {super.key});
+
+  final List<DailyStat> days;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.console;
+    return DataTable(
+      columns: const [
+        DataColumn(label: Text('날짜')),
+        DataColumn(label: Text('기기'), numeric: true),
+        DataColumn(label: Text('여정'), numeric: true),
+        DataColumn(label: Text('알림'), numeric: true),
+        DataColumn(label: Text('실시간 / 폴백'), numeric: true),
+        DataColumn(label: Text('API 호출'), numeric: true),
+      ],
+      rows: [
+        for (final d in days)
+          DataRow(
+            cells: [
+              DataCell(
+                Text(
+                  dashboardDayFormat.format(d.day),
+                  style: ConsoleFonts.body13.copyWith(color: c.textHi),
+                ),
+              ),
+              DataCell(Text(dashboardNumberFormat.format(d.devices))),
+              DataCell(Text(dashboardNumberFormat.format(d.trips))),
+              DataCell(Text(dashboardNumberFormat.format(d.alerts))),
+              DataCell(
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '${d.realtimeTrips}',
+                        style: TextStyle(color: c.ok),
+                      ),
+                      TextSpan(
+                        text: ' / ',
+                        style: TextStyle(color: c.textLo),
+                      ),
+                      TextSpan(
+                        text: '${d.fallbackTrips}',
+                        style: TextStyle(color: c.warn),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              DataCell(Text(dashboardNumberFormat.format(d.apiCalls))),
+            ],
+          ),
+      ],
+    );
+  }
+}
