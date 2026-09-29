@@ -13,7 +13,7 @@ class ConsoleApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: '곽킷 콘솔',
+      title: '하차각 콘솔',
       debugShowCheckedModeBanner: false,
       theme: consoleTheme(Brightness.light),
       darkTheme: consoleTheme(Brightness.dark),

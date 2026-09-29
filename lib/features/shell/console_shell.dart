@@ -80,9 +80,9 @@ class _Brand extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.hub_outlined, size: 20, color: c.accent),
+        Icon(Icons.location_pin, size: 20, color: c.accent),
         const SizedBox(width: 10),
-        Text('곽킷 콘솔', style: ConsoleFonts.wordmark.copyWith(color: c.textHi)),
+        Text('하차각 콘솔', style: ConsoleFonts.wordmark.copyWith(color: c.textHi)),
       ],
     );
   }
@@ -115,42 +115,6 @@ class _Sidebar extends StatelessWidget {
             Divider(color: c.hairline),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
-              child: const ConsoleEyebrow('App'),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: c.panel2,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: c.hairline),
-                ),
-                child: Row(
-                  children: [
-                    ConsoleDot(color: c.ok),
-                    const SizedBox(width: 10),
-                    Text(
-                      '하차각',
-                      style: ConsoleFonts.label.copyWith(color: c.textHi),
-                    ),
-                    const Spacer(),
-                    Text(
-                      'hachagak',
-                      style: ConsoleFonts.monoSmall.copyWith(
-                        color: c.textLo,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 22, 20, 8),
               child: const ConsoleEyebrow('Menu'),
             ),
             for (final (i, s) in _sections.indexed)

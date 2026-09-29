@@ -12,5 +12,5 @@ abstract final class Env {
       !supabasePublishableKey.startsWith('PUT_');
 }
 
-/// 콘솔이 관리하는 곽킷 앱. 지금은 하차각 하나.
+/// 콘솔이 관리하는 앱. 지금은 하차각 하나 (`app` 컬럼으로 앱 추가 여지만 남겨 둠).
 const currentApp = 'hachagak';

@@ -1,6 +1,6 @@
-# 곽킷 콘솔
+# 하차각 콘솔
 
-곽킷 앱(현재 하차각)을 운영하는 관리자 대시보드. Flutter Web + Supabase.
+하차각을 운영하는 관리자 대시보드. Flutter Web + Supabase.
 
 | 화면 | 내용 |
 |---|---|
@@ -26,7 +26,7 @@
 
 ## 실행
 
-VS Code: 실행 및 디버그 → **곽킷 콘솔 (Chrome)**. 또는
+VS Code: 실행 및 디버그 → **하차각 콘솔 (Chrome)**. 또는
 
 ```bash
 flutter run -d chrome --dart-define-from-file=dart_defines/local.json

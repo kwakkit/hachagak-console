@@ -1,22 +1,22 @@
-# 곽킷 콘솔 (kwakkit_console)
+# 하차각 콘솔 (hachagak_console)
 
-곽킷 앱(현재 하차각 하나)을 운영하는 관리자 대시보드. Flutter Web + Supabase(Postgres·Auth·RLS).
+하차각을 운영하는 관리자 대시보드. Flutter Web + Supabase(Postgres·Auth·RLS).
 서버 코드 없음 — 권한은 전부 RLS. 세팅·실행은 [README.md](README.md).
 
 ## 현재 상태 (1주차 완료)
 
 - `supabase/migrations/0001_init.sql` — `admins`, `notices`, `app_config`(key/value jsonb),
   `feedback`, `events`, `daily_stats` 뷰(Asia/Seoul 일별 집계, `security_invoker`).
-  모든 테이블에 `app` 컬럼(현재 `'hachagak'`) — 곽킷 앱 여러 개를 한 콘솔에서.
+  모든 테이블에 `app` 컬럼(현재 `'hachagak'`) — 나중에 앱이 늘어도 한 콘솔에서 다룰 여지.
   **아직 실제 Supabase 에서 실행해 보지 않음.**
 - 화면: 로그인(이메일/비번, `admins` 에 없으면 차단) → 셸(넓으면 NavigationRail, 좁으면 NavigationBar)
   → 대시보드 / 공지 / 원격 설정 / 제보함.
-- `flutter analyze` 0건, `flutter test` 통과, `flutter build web` 성공. GitHub `kwakkit/console`(public) 에 push 됨.
+- `flutter analyze` 0건, `flutter test` 통과, `flutter build web` 성공. GitHub `kwakkit/hachagak-console`(public) 에 push 됨.
 
 ## 명령
 
 ```bash
-flutter run -d chrome --dart-define-from-file=dart_defines/local.json   # VS Code: "곽킷 콘솔 (Chrome)"
+flutter run -d chrome --dart-define-from-file=dart_defines/local.json   # VS Code: "하차각 콘솔 (Chrome)"
 flutter analyze && flutter test
 flutter build web --dart-define-from-file=dart_defines/local.json
 ```

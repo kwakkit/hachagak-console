@@ -1,11 +1,11 @@
 {
-    "name": "kwakkit_console",
-    "short_name": "kwakkit_console",
+    "name": "하차각 콘솔",
+    "short_name": "하차각 콘솔",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "곽킷 운영 콘솔",
+    "description": "하차각 운영 콘솔",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

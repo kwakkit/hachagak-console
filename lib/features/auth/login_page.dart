@@ -129,14 +129,14 @@ class _Wordmark extends StatelessWidget {
     final c = context.console;
     return Column(
       children: [
-        Icon(Icons.hub_outlined, size: 30, color: c.accent),
+        Icon(Icons.location_pin, size: 32, color: c.accent),
         const SizedBox(height: 12),
         Text(
-          '곽킷 콘솔',
+          '하차각 콘솔',
           style: ConsoleFonts.pageTitle.copyWith(color: c.textHi, fontSize: 26),
         ),
         const SizedBox(height: 6),
-        ConsoleEyebrow('Kwakkit · Operations Console', color: c.chrome),
+        ConsoleEyebrow('Hachagak · Operations Console', color: c.chrome),
       ],
     );
   }
