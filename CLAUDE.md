@@ -11,7 +11,7 @@
   **아직 실제 Supabase 에서 실행해 보지 않음.**
 - 화면: 로그인(이메일/비번, `admins` 에 없으면 차단) → 셸(넓으면 NavigationRail, 좁으면 NavigationBar)
   → 대시보드 / 공지 / 원격 설정 / 제보함.
-- `flutter analyze` 0건, `flutter test` 통과, `flutter build web` 성공. 커밋은 아직 없음(`git init` 만).
+- `flutter analyze` 0건, `flutter test` 통과, `flutter build web` 성공. GitHub `kwakkit/console`(public) 에 push 됨.
 
 ## 명령
 
@@ -40,7 +40,11 @@ flutter build web --dart-define-from-file=dart_defines/local.json
    기기 식별은 광고 ID 가 아닌 앱이 만든 랜덤 UUID.
 4. 앱(anon)은 `notices`·`app_config` **읽기만**, `feedback`·`events` **쓰기만**.
 
-## 다음 작업: 2주차 — 하차각 연동 (`../hacha-gak`)
+## 2주차 — 하차각 연동 (`../hacha-gak`) ✅ 코드 완료 (하차각 main `e270dfd`, Supabase 실연결 미검증)
+
+구현 요약은 하차각 `CLAUDE.md` 의 `lib/core/ops/` 항목. 계획과 다른 점: `supabase_flutter` 대신
+이미 있는 dio 로 PostgREST 직접 호출(조회 2·추가 1뿐이라 auth/realtime 의존 불필요).
+아래는 원래 계획(참고용).
 
 작업 위치는 `hacha-gak/lib/core/ops/` (신규). 하차각 `CLAUDE.md`·`docs/DESIGN.md` 규칙을 따른다.
 
