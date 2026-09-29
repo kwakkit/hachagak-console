@@ -9,10 +9,35 @@
 | 원격 설정 | `min_version` / `latest_version` / `realtime_enabled`(방법 A 긴급 OFF) |
 | 제보함 | 상태(새 제보·확인 중·완료) 변경, 관리자 메모 |
 
+## 기술 스택
+
+| 영역 | 사용 기술 |
+|---|---|
+| 프론트엔드 | Flutter 3.47 (Web) · Dart 3.13 · Material 3 |
+| 상태관리 | Riverpod 3 (`flutter_riverpod`, 코드 생성 없음) |
+| 백엔드 | Supabase — Postgres · Auth(이메일/비밀번호) · PostgREST (`supabase_flutter` 2) |
+| DB·권한 | PostgreSQL SQL 마이그레이션, Row Level Security 정책, `security_invoker` 집계 뷰 |
+| 도구 | Supabase CLI(`supabase db push`), `flutter_lints`, `intl`(한국어 날짜) |
+| 폰트 | Orbit · IBM Plex Sans KR(KS X 1001 서브셋) · IBM Plex Mono — OFL 1.1 |
+
+별도 서버 코드는 없다. 콘솔은 브라우저에서 Supabase 에 직접 붙고, 누가 무엇을 읽고 쓸 수 있는지는
+전부 Postgres RLS 정책이 정한다.
+
+| 테이블·뷰 | 용도 | 하차각 앱(anon) | 관리자 |
+|---|---|---|---|
+| `admins` | 콘솔 접근 허용 계정 | — | 본인 행 읽기 |
+| `notices` | 홈 배너 공지 | 게시 중인 것만 읽기 | 전체 |
+| `app_config` | 원격 설정 (key / jsonb value) | 읽기 | 전체 |
+| `feedback` | 문의·오류 제보 | 추가만 | 전체 |
+| `events` | 익명 사용 이벤트 | 추가만 | 읽기 |
+| `daily_stats` (뷰) | Asia/Seoul 일별 집계 | — | 읽기 |
+
 ## 처음 세팅
 
 1. [supabase.com](https://supabase.com) 에서 프로젝트 생성 (Region: Seoul).
-2. SQL Editor 에 [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) 전체를 붙여 실행.
+2. 스키마 적용 — Supabase CLI 로 `supabase link --project-ref <ref>` → `supabase db push`.
+   (CLI 없이 하려면 SQL Editor 에 [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) 전체를 붙여 실행.)
+   이후 스키마 변경은 새 마이그레이션 파일을 추가하고 `supabase db push`.
 3. Authentication → Users → **Add user** 로 관리자 계정 생성 (Auto Confirm 체크).
 4. SQL Editor 에서 관리자 등록:
    ```sql
@@ -37,10 +62,17 @@ flutter run -d chrome --dart-define-from-file=dart_defines/local.json
 ```
 lib/
  ├── main.dart                 # Supabase 초기화
- ├── app/                      # MaterialApp, 인증 게이트, 공통 위젯(AsyncView)
+ ├── app/
+ │    ├── app.dart             # MaterialApp
+ │    ├── gate/                # 인증 게이트·로딩·안내 화면
+ │    ├── theme/               # 관제실 콘솔 팔레트·폰트·테마, 라이트/다크 전환
+ │    └── ui/                  # 공통 위젯(AsyncView·PageScaffold·ConsolePanel…)
  ├── core/                     # env(dart-define), supabase 클라이언트·세션·관리자 확인
- └── features/                 # dashboard / notices / config / feedback / auth / shell
-supabase/migrations/           # 스키마 + RLS
+ └── features/<name>/          # dashboard / notices / config / feedback / auth / shell
+      ├── <name>_page.dart     # 화면 + 조회 provider
+      ├── <name>_repository.dart  # Supabase 호출은 여기에만
+      └── <name>_page/         # 화면 전용 하위 위젯
+supabase/migrations/           # 스키마 + RLS (SQL)
 ```
 
 ## 보안 원칙
