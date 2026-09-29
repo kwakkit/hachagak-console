@@ -49,3 +49,7 @@ app.*.map.json
 
 # 실제 키
 dart_defines/local.json
+
+# 로컬 전용 비밀값 (Supabase DB 비밀번호 등)
+.secrets/
+supabase/.temp/
