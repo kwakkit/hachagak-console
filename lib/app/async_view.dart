@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'console_widgets.dart';
+
 /// AsyncValue 를 로딩·에러·데이터로 그리는 공통 위젯.
 class AsyncView<T> extends StatelessWidget {
   const AsyncView(this.value, {super.key, required this.builder, this.onRetry});
@@ -13,13 +15,33 @@ class AsyncView<T> extends StatelessWidget {
   Widget build(BuildContext context) => value.when(
     loading: () => const Center(child: CircularProgressIndicator()),
     error: (e, _) => Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('불러오기 실패: $e', textAlign: TextAlign.center),
-          if (onRetry != null)
-            TextButton(onPressed: onRetry, child: const Text('다시 시도')),
-        ],
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: ConsolePanel(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              StatusPill('불러오기 실패', color: context.console.alert),
+              const SizedBox(height: 12),
+              SelectableText(
+                '$e',
+                style: ConsoleFonts.monoSmall.copyWith(
+                  color: context.console.textLo,
+                ),
+              ),
+              if (onRetry != null) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('다시 시도'),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     ),
     data: builder,

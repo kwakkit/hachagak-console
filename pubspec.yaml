@@ -60,6 +60,25 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # "관제실 콘솔" 폰트 — 하차각과 동일 (OFL 1.1, assets/fonts/*-OFL.txt).
+  # IBM Plex Sans KR 은 웹 용량 때문에 KS X 1001 한글 2,350자 + 라틴·기호로 서브셋.
+  fonts:
+    - family: Orbit
+      fonts:
+        - asset: assets/fonts/Orbit-Regular.ttf
+    - family: IBMPlexSansKR
+      fonts:
+        - asset: assets/fonts/IBMPlexSansKR-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexSansKR-SemiBold.ttf
+          weight: 600
+    - family: IBMPlexMono
+      fonts:
+        - asset: assets/fonts/IBMPlexMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexMono-SemiBold.ttf
+          weight: 600
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

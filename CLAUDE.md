@@ -26,8 +26,12 @@ flutter build web --dart-define-from-file=dart_defines/local.json
 - 구조: `lib/app/`(MaterialApp·인증 게이트·공통 위젯) · `lib/core/`(env, supabase) · `lib/features/<name>/`.
 - 상태관리 Riverpod 3 (`FutureProvider.autoDispose` + 쓰기 후 `ref.invalidate`). 코드 생성 안 씀.
 - 비동기 화면은 `AsyncView`, 쓰기 작업은 `runWithSnack` (`lib/app/async_view.dart`).
-- 페이지 공통 레이아웃 `PageScaffold` (`lib/features/shell/console_shell.dart`).
-- 브랜드 시드 `#6C3AE0` — 하차각과 동일.
+- 페이지 공통 레이아웃 `PageScaffold(title, eyebrow)` (`lib/features/shell/console_shell.dart`).
+- **디자인 = 하차각 "관제실 콘솔"** — `lib/app/theme/`(`ConsolePalette` 라이트=청사진·다크=야간 관제실,
+  `ConsoleFonts` Orbit/IBM Plex Sans KR/Mono, `consoleTheme`) + `lib/app/console_widgets.dart`
+  (`ConsoleBackdrop`·`ConsolePanel`·`ConsoleEyebrow`·`StatusPill`·`BracketFrame`·`EmptyState`, `themeModeProvider`
+  기본 라이트). 색은 의미 있는 곳에만: 브랜드 보라 `accent`, 상태 `ok`/`warn`/`alert`. 카드 대신 `ConsolePanel`.
+  한글 폰트는 웹 용량 때문에 KS X 1001 2,350자 서브셋(`assets/fonts/`), mono 스타일은 한글 폴백 지정.
 - 키는 `--dart-define-from-file` 로 주입, `dart_defines/local.json` 은 git 제외.
   **Supabase secret key 는 앱·콘솔 어디에도 넣지 않는다** (Publishable key 만).
 

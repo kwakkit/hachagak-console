@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/async_view.dart';
+import '../../app/console_widgets.dart';
 import '../../core/env.dart';
 import '../../core/supabase.dart';
 import '../shell/console_shell.dart';
@@ -36,6 +37,8 @@ class Notice {
     final now = DateTime.now();
     return !startsAt.isAfter(now) && (endsAt == null || endsAt!.isAfter(now));
   }
+
+  bool get isScheduled => startsAt.isAfter(DateTime.now());
 }
 
 final noticesProvider = FutureProvider.autoDispose<List<Notice>>((ref) async {
@@ -64,10 +67,11 @@ class NoticesPage extends ConsumerWidget {
 
     return PageScaffold(
       title: '공지',
+      eyebrow: 'Notices · 앱 홈 배너',
       actions: [
         FilledButton.icon(
           onPressed: edit,
-          icon: const Icon(Icons.add),
+          icon: const Icon(Icons.add, size: 18),
           label: const Text('새 공지'),
         ),
       ],
@@ -75,40 +79,102 @@ class NoticesPage extends ConsumerWidget {
         ref.watch(noticesProvider),
         onRetry: () => ref.invalidate(noticesProvider),
         builder: (list) => list.isEmpty
-            ? const Center(child: Text('공지가 없습니다.'))
+            ? const EmptyState(
+                icon: Icons.campaign_outlined,
+                message: '공지가 없습니다.\n게시 중인 공지는 하차각 홈 상단에 배너로 뜹니다.',
+              )
             : ListView.separated(
+                padding: const EdgeInsets.only(bottom: 32),
                 itemCount: list.length,
-                separatorBuilder: (_, _) => const Divider(height: 1),
-                itemBuilder: (_, i) {
-                  final n = list[i];
-                  final period =
-                      '${_fmt.format(n.startsAt)} ~ ${n.endsAt == null ? '계속' : _fmt.format(n.endsAt!)}';
-                  return ListTile(
-                    title: Text(n.title),
-                    subtitle: Text(period),
-                    leading: Icon(
-                      n.isLive ? Icons.circle : Icons.circle_outlined,
-                      size: 12,
-                      color: n.isLive ? Colors.green : null,
-                    ),
-                    trailing: IconButton(
-                      tooltip: '삭제',
-                      icon: const Icon(Icons.delete_outline),
-                      onPressed: () async {
-                        final ok = await _confirmDelete(context, n.title);
-                        if (!ok || !context.mounted) return;
-                        await runWithSnack(
-                          context,
-                          () => db.from('notices').delete().eq('id', n.id),
-                          success: '삭제했습니다.',
-                        );
-                        ref.invalidate(noticesProvider);
-                      },
-                    ),
-                    onTap: () => edit(n),
-                  );
-                },
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                itemBuilder: (_, i) => _NoticeRow(
+                  notice: list[i],
+                  onEdit: () => edit(list[i]),
+                  onDelete: () async {
+                    final n = list[i];
+                    final ok = await _confirmDelete(context, n.title);
+                    if (!ok || !context.mounted) return;
+                    await runWithSnack(
+                      context,
+                      () => db.from('notices').delete().eq('id', n.id),
+                      success: '삭제했습니다.',
+                    );
+                    ref.invalidate(noticesProvider);
+                  },
+                ),
               ),
+      ),
+    );
+  }
+}
+
+class _NoticeRow extends StatelessWidget {
+  const _NoticeRow({
+    required this.notice,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final Notice notice;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.console;
+    final n = notice;
+    final (label, color) = n.isLive
+        ? ('게시 중', c.ok)
+        : n.isScheduled
+        ? ('예약', c.warn)
+        : ('종료', c.chromeDim);
+    final period =
+        '${_fmt.format(n.startsAt)}  →  ${n.endsAt == null ? '계속' : _fmt.format(n.endsAt!)}';
+
+    return ConsolePanel(
+      onTap: onEdit,
+      borderColor: n.isLive ? c.ok.withValues(alpha: 0.35) : null,
+      padding: const EdgeInsets.fromLTRB(18, 14, 8, 14),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    StatusPill(label, color: color),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        n.title,
+                        overflow: TextOverflow.ellipsis,
+                        style: ConsoleFonts.label.copyWith(color: c.textHi),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  n.body,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: ConsoleFonts.body13.copyWith(color: c.textLo),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  period,
+                  style: ConsoleFonts.monoSmall.copyWith(color: c.chromeDim),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: '삭제',
+            icon: const Icon(Icons.delete_outline),
+            onPressed: onDelete,
+          ),
+        ],
       ),
     );
   }
@@ -126,6 +192,7 @@ Future<bool> _confirmDelete(BuildContext context, String title) async =>
             child: const Text('취소'),
           ),
           FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: c.console.alert),
             onPressed: () => Navigator.pop(c, true),
             child: const Text('삭제'),
           ),

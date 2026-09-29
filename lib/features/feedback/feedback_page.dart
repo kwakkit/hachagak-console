@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/async_view.dart';
+import '../../app/console_widgets.dart';
 import '../../core/env.dart';
 import '../../core/supabase.dart';
 import '../shell/console_shell.dart';
@@ -18,6 +19,12 @@ enum FeedbackStatus {
 
   static FeedbackStatus parse(String v) =>
       values.firstWhere((s) => s.value == v, orElse: () => newOne);
+
+  Color color(ConsolePalette c) => switch (this) {
+    newOne => c.alert,
+    checking => c.warn,
+    done => c.ok,
+  };
 }
 
 const _categoryLabels = {'bug': '오류', 'idea': '제안', 'etc': '기타'};
@@ -75,6 +82,7 @@ class FeedbackPage extends ConsumerWidget {
     final filter = ref.watch(feedbackFilterProvider);
     return PageScaffold(
       title: '제보함',
+      eyebrow: 'Inbox · 앱 문의·오류 제보',
       actions: [
         SegmentedButton<FeedbackStatus?>(
           segments: [
@@ -83,6 +91,7 @@ class FeedbackPage extends ConsumerWidget {
             const ButtonSegment(value: null, label: Text('전체')),
           ],
           selected: {filter},
+          showSelectedIcon: false,
           onSelectionChanged: (s) =>
               ref.read(feedbackFilterProvider.notifier).set(s.first),
         ),
@@ -91,9 +100,14 @@ class FeedbackPage extends ConsumerWidget {
         ref.watch(feedbackProvider),
         onRetry: () => ref.invalidate(feedbackProvider),
         builder: (items) => items.isEmpty
-            ? const Center(child: Text('제보가 없습니다.'))
-            : ListView.builder(
+            ? const EmptyState(
+                icon: Icons.inbox_outlined,
+                message: '제보가 없습니다.\n하차각 설정 → "문의·오류 제보" 로 들어옵니다.',
+              )
+            : ListView.separated(
+                padding: const EdgeInsets.only(bottom: 32),
                 itemCount: items.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (_, i) => _FeedbackCard(
                   item: items[i],
                   onChanged: () => ref.invalidate(feedbackProvider),
@@ -141,25 +155,65 @@ class _FeedbackCardState extends State<_FeedbackCard> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.console;
     final item = widget.item;
-    final texts = Theme.of(context).textTheme;
     final meta = [
-      _categoryLabels[item.category] ?? item.category,
       _fmt.format(item.createdAt),
       if (item.appVersion != null) 'v${item.appVersion}',
       if (item.os != null) item.os!,
-    ].join(' · ');
+    ].join('  ·  ');
 
-    return Card(
+    return ConsolePanel(
+      padding: EdgeInsets.zero,
+      borderColor: item.status == FeedbackStatus.newOne
+          ? c.alert.withValues(alpha: 0.35)
+          : null,
       child: ExpansionTile(
-        title: Text(item.message, maxLines: 2, overflow: TextOverflow.ellipsis),
-        subtitle: Text(meta, style: texts.bodySmall),
-        trailing: Chip(label: Text(item.status.label)),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        tilePadding: const EdgeInsets.fromLTRB(18, 8, 14, 8),
+        title: Row(
+          children: [
+            _CategoryTag(_categoryLabels[item.category] ?? item.category),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                item.message,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: ConsoleFonts.label.copyWith(
+                  color: c.textHi,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+          ],
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Text(
+            meta,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: ConsoleFonts.monoSmall.copyWith(
+              color: c.chromeDim,
+              fontSize: 11,
+            ),
+          ),
+        ),
+        trailing: StatusPill(item.status.label, color: item.status.color(c)),
+        childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
         expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SelectableText(item.message),
-          const SizedBox(height: 16),
+          Divider(color: c.hairline),
+          const SizedBox(height: 14),
+          SelectableText(
+            item.message,
+            style: ConsoleFonts.body13.copyWith(
+              color: c.textHi,
+              fontSize: 14,
+              height: 1.6,
+            ),
+          ),
+          const SizedBox(height: 18),
           TextField(
             controller: _note,
             decoration: const InputDecoration(labelText: '관리자 메모'),
@@ -168,22 +222,50 @@ class _FeedbackCardState extends State<_FeedbackCard> {
           ),
           const SizedBox(height: 12),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 12,
             children: [
-              DropdownButton<FeedbackStatus>(
-                value: _status,
-                items: [
+              SegmentedButton<FeedbackStatus>(
+                segments: [
                   for (final s in FeedbackStatus.values)
-                    DropdownMenuItem(value: s, child: Text(s.label)),
+                    ButtonSegment(value: s, label: Text(s.label)),
                 ],
-                onChanged: (s) => setState(() => _status = s!),
+                selected: {_status},
+                showSelectedIcon: false,
+                onSelectionChanged: (s) => setState(() => _status = s.first),
               ),
-              FilledButton.tonal(onPressed: _save, child: const Text('저장')),
+              FilledButton(onPressed: _save, child: const Text('저장')),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CategoryTag extends StatelessWidget {
+  const _CategoryTag(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.console;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: c.panel2,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: c.hairline),
+      ),
+      child: Text(
+        label,
+        style: ConsoleFonts.eyebrow.copyWith(
+          color: c.chrome,
+          letterSpacing: 0.6,
+        ),
       ),
     );
   }
