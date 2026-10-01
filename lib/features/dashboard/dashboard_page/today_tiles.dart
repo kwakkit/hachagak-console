@@ -5,7 +5,7 @@ import '../dashboard_data.dart';
 import 'dashboard_formats.dart';
 import 'stat_tile.dart';
 
-/// 오늘 수치 패널 5개 — 폭에 따라 5/3/2열.
+/// 오늘 수치 패널 6개 — 폭에 따라 6/3/2열.
 class TodayTiles extends StatelessWidget {
   const TodayTiles(this.data, {super.key});
 
@@ -16,10 +16,15 @@ class TodayTiles extends StatelessWidget {
     final c = context.console;
     final today = DateUtils.dateOnly(DateTime.now());
     final t = data.days.where((d) => d.day == today).firstOrNull;
-    final ended = (t?.realtimeTrips ?? 0) + (t?.fallbackTrips ?? 0);
-    final fallbackRate = ended == 0
+    // 폴백 비율: 실시간을 켠 여정(realtime+fallback) 중 강등된 비율.
+    final realtimeArmed = (t?.realtimeTrips ?? 0) + (t?.fallbackTrips ?? 0);
+    final fallbackRate = realtimeArmed == 0
         ? '–'
-        : '${(t!.fallbackTrips * 100 / ended).round()}%';
+        : '${(t!.fallbackTrips * 100 / realtimeArmed).round()}%';
+    // 도착 완료율: 끝난 여정 중 목적지 도착으로 끝난 비율 (나머지는 사용자 정지).
+    final arrivedRate = (t?.endedTrips ?? 0) == 0
+        ? '–'
+        : '${(t!.arrivedTrips * 100 / t.endedTrips).round()}%';
 
     final tiles = [
       StatTile(
@@ -37,6 +42,7 @@ class TodayTiles extends StatelessWidget {
         dashboardNumberFormat.format(t?.apiCalls ?? 0),
         Icons.cloud_sync_outlined,
       ),
+      StatTile('도착 완료율', arrivedRate, Icons.flag_outlined),
       StatTile('폴백 비율', fallbackRate, Icons.alt_route_outlined),
       StatTile(
         '새 제보',
@@ -48,8 +54,8 @@ class TodayTiles extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, box) {
-        final cols = box.maxWidth >= 900
-            ? 5
+        final cols = box.maxWidth >= 1000
+            ? 6
             : box.maxWidth >= 560
             ? 3
             : 2;

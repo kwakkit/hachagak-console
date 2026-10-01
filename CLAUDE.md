@@ -76,3 +76,16 @@ flutter build web --dart-define-from-file=dart_defines/local.json
 6. 3주차 예고: 이벤트는 `trip_started`, `alert_fired{kind}`, `trip_ended{mode: realtime|fallback, api_calls}`
    3종만. 추적 isolate 는 Hive 큐에 쌓기만 하고 **다음 앱 실행 때 메인 isolate 가 일괄 전송**.
 7. 출시 전: 개인정보처리방침·Play 데이터 보안 양식에 "앱 활동·진단 정보" 수집 추가 고지.
+
+## 3주차 — 이벤트 전송 → 대시보드 통계 ✅ 코드 완료 (실기기·Supabase 실전송 미검증)
+
+- **하차각** (`lib/core/ops/`): 추적 isolate 가 `EventQueue` 에 이벤트마다 **고유 키**로 쌓고
+  (`flutter_foreground_task` 스토리지 — Hive 는 isolate 간 공유 불가라 안 씀, 읽고 고쳐 쓰기 없음 → 경합 없음),
+  메인 isolate 의 `OpsEventFlusher`(앱 시작·복귀)가 `EventUploader` 로 100건씩 `events` 에 POST 하고
+  보낸 키만 지운다. 실패는 큐에 남겨 다음에 (fail-open). 최대 300건, 넘치면 오래된 것부터 버림.
+- 이벤트: `trip_started`(사용자 시작만, OS 재시작 제외) · `alert_fired{kind: approaching|transfer|arrived}` ·
+  `trip_ended{mode: realtime|fallback|timetable, api_calls, reason: arrived|stopped}`.
+  역·경로·위치 없음. 기기 UUID·앱 버전은 전송 시 메인이 붙인다. `api_calls`·강등 여부는 `TripPlan` 에 영속.
+- **콘솔**: `0002_daily_stats_trip_outcomes.sql`(2026-10-01 Supabase 적용) — `daily_stats` 끝에 `timetable_trips`·`ended_trips`·
+  `arrived_trips` 추가. 대시보드 "도착 완료율" 타일, 표에 시간표 수·도착/종료 열.
+  `DailyStat` 은 새 열이 없으면 0 (마이그레이션 전 DB 에서도 안 깨짐).

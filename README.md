@@ -2,35 +2,35 @@
 
 하차각을 운영하는 관리자 대시보드. Flutter Web + Supabase.
 
-| 화면 | 내용 |
-|---|---|
-| 대시보드 | 오늘 여정·기기·API 호출·폴백 비율·새 제보, 최근 14일 표 |
-| 공지 | 작성·수정·삭제, 게시 기간 |
+| 화면      | 내용                                                                   |
+| --------- | ---------------------------------------------------------------------- |
+| 대시보드  | 오늘 여정·기기·API 호출·도착 완료율·폴백 비율·새 제보, 최근 14일 표    |
+| 공지      | 작성·수정·삭제, 게시 기간                                              |
 | 원격 설정 | `min_version` / `latest_version` / `realtime_enabled`(방법 A 긴급 OFF) |
-| 제보함 | 상태(새 제보·확인 중·완료) 변경, 관리자 메모 |
+| 제보함    | 상태(새 제보·확인 중·완료) 변경, 관리자 메모                           |
 
 ## 기술 스택
 
-| 영역 | 사용 기술 |
-|---|---|
-| 프론트엔드 | Flutter 3.47 (Web) · Dart 3.13 · Material 3 |
-| 상태관리 | Riverpod 3 (`flutter_riverpod`, 코드 생성 없음) |
-| 백엔드 | Supabase — Postgres · Auth(이메일/비밀번호) · PostgREST (`supabase_flutter` 2) |
-| DB·권한 | PostgreSQL SQL 마이그레이션, Row Level Security 정책, `security_invoker` 집계 뷰 |
-| 도구 | Supabase CLI(`supabase db push`), `flutter_lints`, `intl`(한국어 날짜) |
-| 폰트 | Orbit · IBM Plex Sans KR(KS X 1001 서브셋) · IBM Plex Mono — OFL 1.1 |
+| 영역       | 사용 기술                                                                        |
+| ---------- | -------------------------------------------------------------------------------- |
+| 프론트엔드 | Flutter 3.47 (Web) · Dart 3.13 · Material 3                                      |
+| 상태관리   | Riverpod 3 (`flutter_riverpod`, 코드 생성 없음)                                  |
+| 백엔드     | Supabase — Postgres · Auth(이메일/비밀번호) · PostgREST (`supabase_flutter` 2)   |
+| DB·권한    | PostgreSQL SQL 마이그레이션, Row Level Security 정책, `security_invoker` 집계 뷰 |
+| 도구       | Supabase CLI(`supabase db push`), `flutter_lints`, `intl`(한국어 날짜)           |
+| 폰트       | Orbit · IBM Plex Sans KR(KS X 1001 서브셋) · IBM Plex Mono — OFL 1.1             |
 
 별도 서버 코드는 없다. 콘솔은 브라우저에서 Supabase 에 직접 붙고, 누가 무엇을 읽고 쓸 수 있는지는
 전부 Postgres RLS 정책이 정한다.
 
-| 테이블·뷰 | 용도 | 하차각 앱(anon) | 관리자 |
-|---|---|---|---|
-| `admins` | 콘솔 접근 허용 계정 | — | 본인 행 읽기 |
-| `notices` | 홈 배너 공지 | 게시 중인 것만 읽기 | 전체 |
-| `app_config` | 원격 설정 (key / jsonb value) | 읽기 | 전체 |
-| `feedback` | 문의·오류 제보 | 추가만 | 전체 |
-| `events` | 익명 사용 이벤트 | 추가만 | 읽기 |
-| `daily_stats` (뷰) | Asia/Seoul 일별 집계 | — | 읽기 |
+| 테이블·뷰          | 용도                          | 하차각 앱(anon)     | 관리자       |
+| ------------------ | ----------------------------- | ------------------- | ------------ |
+| `admins`           | 콘솔 접근 허용 계정           | —                   | 본인 행 읽기 |
+| `notices`          | 홈 배너 공지                  | 게시 중인 것만 읽기 | 전체         |
+| `app_config`       | 원격 설정 (key / jsonb value) | 읽기                | 전체         |
+| `feedback`         | 문의·오류 제보                | 추가만              | 전체         |
+| `events`           | 익명 사용 이벤트              | 추가만              | 읽기         |
+| `daily_stats` (뷰) | Asia/Seoul 일별 집계          | —                   | 읽기         |
 
 ## 처음 세팅
 

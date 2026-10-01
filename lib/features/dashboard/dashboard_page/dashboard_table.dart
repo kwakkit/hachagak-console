@@ -4,7 +4,7 @@ import '../../../app/console_widgets.dart';
 import '../daily_stat.dart';
 import 'dashboard_formats.dart';
 
-/// 최근 14일 일별 표 — 실시간/폴백은 색으로 구분.
+/// 최근 14일 일별 표 — 끝난 여정의 추적 모드(실시간/폴백/시간표)는 색으로 구분.
 class DashboardTable extends StatelessWidget {
   const DashboardTable(this.days, {super.key});
 
@@ -19,7 +19,8 @@ class DashboardTable extends StatelessWidget {
         DataColumn(label: Text('기기'), numeric: true),
         DataColumn(label: Text('여정'), numeric: true),
         DataColumn(label: Text('알림'), numeric: true),
-        DataColumn(label: Text('실시간 / 폴백'), numeric: true),
+        DataColumn(label: Text('실시간 / 폴백 / 시간표'), numeric: true),
+        DataColumn(label: Text('도착 / 종료'), numeric: true),
         DataColumn(label: Text('API 호출'), numeric: true),
       ],
       rows: [
@@ -51,8 +52,22 @@ class DashboardTable extends StatelessWidget {
                         text: '${d.fallbackTrips}',
                         style: TextStyle(color: c.warn),
                       ),
+                      TextSpan(
+                        text: ' / ',
+                        style: TextStyle(color: c.textLo),
+                      ),
+                      TextSpan(
+                        text: '${d.timetableTrips}',
+                        style: TextStyle(color: c.textLo),
+                      ),
                     ],
                   ),
+                ),
+              ),
+              DataCell(
+                Text(
+                  '${dashboardNumberFormat.format(d.arrivedTrips)} / '
+                  '${dashboardNumberFormat.format(d.endedTrips)}',
                 ),
               ),
               DataCell(Text(dashboardNumberFormat.format(d.apiCalls))),
