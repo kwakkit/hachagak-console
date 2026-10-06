@@ -1,4 +1,4 @@
-/// `daily_stats` 뷰 한 행 — Asia/Seoul 기준 하루 집계.
+/// `daily_stats` 한 행 — Asia/Seoul 기준 하루 집계.
 class DailyStat {
   DailyStat.fromRow(Map<String, dynamic> r)
     : day = DateTime.parse(r['day'] as String),

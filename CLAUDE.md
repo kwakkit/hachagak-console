@@ -89,3 +89,15 @@ flutter build web --dart-define-from-file=dart_defines/local.json
 - **콘솔**: `0002_daily_stats_trip_outcomes.sql`(2026-10-01 Supabase 적용) — `daily_stats` 끝에 `timetable_trips`·`ended_trips`·
   `arrived_trips` 추가. 대시보드 "도착 완료율" 타일, 표에 시간표 수·도착/종료 열.
   `DailyStat` 은 새 열이 없으면 0 (마이그레이션 전 DB 에서도 안 깨짐).
+
+## 사용자 증가 대비 — `0003_scale_guards.sql` (로컬 Supabase 검증, **운영 미적용**)
+
+- **앱 쓰기 남용 방어:** `events`·`feedback` BEFORE INSERT 트리거(security definer)가 검증 실패 행을
+  `return null` 로 조용히 버린다 — CHECK 위반 400 이면 앱의 100건 배치가 큐에 남아 무한 재전송되기 때문.
+  events: app·name 허용 목록, props 는 객체·512B 이하, occurred_at 은 30일 전~1시간 후, 기기당 시간당 300건.
+  feedback: 기기당 하루 10건(기기 없음은 묶어서 30건), app_version·os 는 잘라서 저장. `created_at` 은 서버 시각 강제.
+- **집계:** `daily_stats` 는 뷰 → 테이블. `refresh_daily_stats()` 가 지난 갱신 이후 `created_at` 기준으로
+  새 이벤트가 걸친 날만 통째로 다시 센다(10분 겹침). pg_cron 매시 + 콘솔 대시보드 조회 직전(관리자만 실행 가능).
+- **보관:** `purge_old_events()` 가 매일 90일 지난 원본 이벤트 삭제 — 30일보다 오래된 occurred_at 은 애초에
+  안 받으므로 지워진 날의 집계는 다시 계산되지 않는다.
+- 새 이벤트 이름·앱을 추가하면 `guard_event_insert` 의 허용 목록도 같이 고칠 것(안 고치면 조용히 버려짐).
