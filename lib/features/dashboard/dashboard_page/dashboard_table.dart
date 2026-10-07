@@ -21,6 +21,7 @@ class DashboardTable extends StatelessWidget {
         DataColumn(label: Text('알림'), numeric: true),
         DataColumn(label: Text('실시간 / 폴백 / 시간표'), numeric: true),
         DataColumn(label: Text('도착 / 종료'), numeric: true),
+        DataColumn(label: Text('평균 정거장 / 환승 여정'), numeric: true),
         DataColumn(label: Text('API 호출'), numeric: true),
       ],
       rows: [
@@ -68,6 +69,14 @@ class DashboardTable extends StatelessWidget {
                 Text(
                   '${dashboardNumberFormat.format(d.arrivedTrips)} / '
                   '${dashboardNumberFormat.format(d.endedTrips)}',
+                ),
+              ),
+              DataCell(
+                Text(
+                  d.routeTrips == 0
+                      ? '–'
+                      : '${(d.stopsSum / d.routeTrips).toStringAsFixed(1)} / '
+                            '${dashboardNumberFormat.format(d.transferTrips)}',
                 ),
               ),
               DataCell(Text(dashboardNumberFormat.format(d.apiCalls))),

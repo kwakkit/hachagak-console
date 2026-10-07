@@ -101,3 +101,16 @@ flutter build web --dart-define-from-file=dart_defines/local.json
 - **보관:** `purge_old_events()` 가 매일 90일 지난 원본 이벤트 삭제 — 30일보다 오래된 occurred_at 은 애초에
   안 받으므로 지워진 날의 집계는 다시 계산되지 않는다.
 - 새 이벤트 이름·앱을 추가하면 `guard_event_insert` 의 허용 목록도 같이 고칠 것(안 고치면 조용히 버려짐).
+
+## 경로 통계 (노선 단위) — `0004_route_stats.sql` (로컬 Supabase 검증, **운영 미적용**)
+
+- **수집 범위 = Play 데이터 보안 양식 "앱 활동(앱 상호작용)" 안.** 하차각 `trip_started.props` 에
+  `lines`(노선 id 순서대로)·`transfers`·`stops` 만. **역 이름·출발/도착역·위치는 받지 않는다** —
+  보내면 "위치"·"앱 내 검색 기록" 신고 대상이 되고 핵심 제약 3과도 어긋난다.
+- `daily_stats` 에 `route_trips`(노선 정보 있는 시작 여정)·`transfer_trips`·`transfers_sum`·`stops_sum`,
+  새 표 `daily_line_stats(app, day, line, trips)` — 한 여정이 같은 노선을 두 번 타도 1, 노선 id 는
+  `^[A-Za-z0-9_-]{1,16}$` 만(역 이름이 끼어들면 버림). `refresh_daily_stats()` 가 둘 다 갱신(0004 판).
+- 콘솔: 대시보드 "경로 (최근 14일)" — `RouteTiles`(경로 정보 여정·평균 정거장·환승 여정 비율·평균 환승)
+  + `LineUsagePanel`(노선별 막대, 비율 합은 100% 초과 가능) + 표에 "평균 정거장 / 환승 여정" 열.
+  노선 이름·색은 `SubwayLine.all`(하차각 `seoul.json` 과 수동 동기화). 노선 정보 없는 옛 앱 여정은 평균에서 빠진다.
+
