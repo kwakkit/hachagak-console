@@ -13,7 +13,11 @@ class DashboardTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.console;
+    // 좁은 창에선 열 간격을 줄여 가로 스크롤을 덜 하게.
+    final narrow = MediaQuery.sizeOf(context).width < wideBreakpoint;
     return DataTable(
+      columnSpacing: narrow ? 24 : 56,
+      horizontalMargin: narrow ? 16 : 24,
       columns: const [
         DataColumn(label: Text('날짜')),
         DataColumn(label: Text('기기'), numeric: true),

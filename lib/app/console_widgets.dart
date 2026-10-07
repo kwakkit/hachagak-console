@@ -10,5 +10,6 @@ export 'ui/console_dot.dart';
 export 'ui/console_eyebrow.dart';
 export 'ui/console_panel.dart';
 export 'ui/empty_state.dart';
+export 'ui/horizontal_scroll.dart';
 export 'ui/page_scaffold.dart';
 export 'ui/status_pill.dart';

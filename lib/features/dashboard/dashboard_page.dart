@@ -69,15 +69,7 @@ class DashboardPage extends ConsumerWidget {
                       icon: Icons.sensors_off_outlined,
                       message: '아직 수집된 이벤트가 없습니다.\n하차각 이벤트 전송(3주차) 후 채워집니다.',
                     )
-                  : LayoutBuilder(
-                      builder: (context, box) => SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(minWidth: box.maxWidth),
-                          child: DashboardTable(data.days),
-                        ),
-                      ),
-                    ),
+                  : HorizontalScroll(child: DashboardTable(data.days)),
             ),
           ],
         ),
