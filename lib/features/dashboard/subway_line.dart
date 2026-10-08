@@ -22,6 +22,12 @@ class SubwayLine {
     SubwayLine('I1', '인천1호선', Color(0xFF7CA8D5)),
     SubwayLine('I2', '인천2호선', Color(0xFFF5A200)),
     SubwayLine('GTXA', 'GTX-A', Color(0xFF9A6292)),
+    // 광역선 — 하차각 tool/build_kric.dart 로 추가 예정(id = KRIC 선코드).
+    // 색은 위키백과 Module:Adjacent_stations/Seoul_Metropolitan_Subway 기준.
+    SubwayLine('A1', '공항철도', Color(0xFF0090D2)),
+    SubwayLine('D1', '신분당선', Color(0xFFD31145)),
+    SubwayLine('K1', '수인분당선', Color(0xFFFABE00)),
+    SubwayLine('K4', '경의중앙선', Color(0xFF77C4A3)),
   ];
 
   static SubwayLine of(String id) => all.firstWhere(

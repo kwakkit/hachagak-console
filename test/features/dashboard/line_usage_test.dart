@@ -22,6 +22,15 @@ void main() {
     expect([for (final u in out) u.trips], [6, 3, 1]);
   });
 
+  test('광역선 id(KRIC 선코드) → 노선명', () {
+    expect(SubwayLine.of('A1').name, '공항철도');
+    expect(SubwayLine.of('D1').name, '신분당선');
+    expect(SubwayLine.of('K1').name, '수인분당선');
+    expect(SubwayLine.of('K4').name, '경의중앙선');
+    final ids = [for (final l in SubwayLine.all) l.id];
+    expect(ids.toSet(), hasLength(ids.length));
+  });
+
   test('모르는 노선 id 는 id 그대로 표시', () {
     final l = SubwayLine.of('B1');
     expect(l.name, 'B1');
