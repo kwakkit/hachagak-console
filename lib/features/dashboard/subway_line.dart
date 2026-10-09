@@ -22,22 +22,21 @@ class SubwayLine {
     SubwayLine('I1', '인천1호선', Color(0xFF7CA8D5)),
     SubwayLine('I2', '인천2호선', Color(0xFFF5A200)),
     SubwayLine('GTXA', 'GTX-A', Color(0xFF9A6292)),
-    // 광역선 — id = KRIC 선코드.
+    // 광역·경전철 — id = KRIC 선코드(레일포털 코드정보 2026.07.11).
     // 색은 위키백과 Module:Adjacent_stations/Seoul_Metropolitan_Subway 기준.
     SubwayLine('A1', '공항철도', Color(0xFF0090D2)),
     SubwayLine('D1', '신분당선', Color(0xFFD31145)),
     SubwayLine('K1', '수인분당선', Color(0xFFFABE00)),
     SubwayLine('K4', '경의중앙선', Color(0xFF77C4A3)),
-    // 이하 KRIC 선코드 미확인 노선 — 하차각 앱 고유 id(2026-10-09 추정치 선반영).
-    SubwayLine('SH', '서해선', Color(0xFF8FC31F)),
-    SubwayLine('GC', '경춘선', Color(0xFF0C8E72)),
-    SubwayLine('GK', '경강선', Color(0xFF003DA5)),
+    SubwayLine('WS', '서해선', Color(0xFF8FC31F)),
+    SubwayLine('K2', '경춘선', Color(0xFF0C8E72)),
+    SubwayLine('K5', '경강선', Color(0xFF003DA5)),
     SubwayLine('UI', '우이신설선', Color(0xFFB0CE18)),
-    SubwayLine('SL', '신림선', Color(0xFF6789CA)),
-    SubwayLine('UJ', '의정부경전철', Color(0xFFFDA600)),
-    SubwayLine('EV', '용인에버라인', Color(0xFF509F22)),
-    SubwayLine('GG', '김포골드라인', Color(0xFFA17800)),
-    SubwayLine('MG', '인천공항자기부상', Color(0xFFFFCD12)),
+    SubwayLine('L1', '신림선', Color(0xFF6789CA)),
+    SubwayLine('U1', '의정부경전철', Color(0xFFFDA600)),
+    SubwayLine('E1', '용인에버라인', Color(0xFF509F22)),
+    SubwayLine('G1', '김포골드라인', Color(0xFFA17800)),
+    SubwayLine('M1', '인천공항자기부상', Color(0xFFFFCD12)),
   ];
 
   static SubwayLine of(String id) => all.firstWhere(
