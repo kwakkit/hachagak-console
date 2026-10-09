@@ -90,7 +90,7 @@ flutter build web --dart-define-from-file=dart_defines/local.json
   `arrived_trips` 추가. 대시보드 "도착 완료율" 타일, 표에 시간표 수·도착/종료 열.
   `DailyStat` 은 새 열이 없으면 0 (마이그레이션 전 DB 에서도 안 깨짐).
 
-## 사용자 증가 대비 — `0003_scale_guards.sql` (로컬 Supabase 검증, **운영 미적용**)
+## 사용자 증가 대비 — `0003_scale_guards.sql` (로컬 검증 후 2026-10-09 운영 적용)
 
 - **앱 쓰기 남용 방어:** `events`·`feedback` BEFORE INSERT 트리거(security definer)가 검증 실패 행을
   `return null` 로 조용히 버린다 — CHECK 위반 400 이면 앱의 100건 배치가 큐에 남아 무한 재전송되기 때문.
@@ -102,7 +102,7 @@ flutter build web --dart-define-from-file=dart_defines/local.json
   안 받으므로 지워진 날의 집계는 다시 계산되지 않는다.
 - 새 이벤트 이름·앱을 추가하면 `guard_event_insert` 의 허용 목록도 같이 고칠 것(안 고치면 조용히 버려짐).
 
-## 경로 통계 (노선 단위) — `0004_route_stats.sql` (로컬 Supabase 검증, **운영 미적용**)
+## 경로 통계 (노선 단위) — `0004_route_stats.sql` (로컬 검증 후 2026-10-09 운영 적용)
 
 - **수집 범위 = Play 데이터 보안 양식 "앱 활동(앱 상호작용)" 안.** 하차각 `trip_started.props` 에
   `lines`(노선 id 순서대로)·`transfers`·`stops` 만. **역 이름·출발/도착역·위치는 받지 않는다** —
