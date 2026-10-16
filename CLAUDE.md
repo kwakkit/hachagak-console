@@ -15,7 +15,7 @@
 
 ## 런디캐스트(laundrycast)와 DB 공유
 
-같은 Supabase 프로젝트에 런디캐스트 표(`lc_*`)가 있다 — `supabase/migrations/0005~0007_laundrycast*.sql`.
+같은 Supabase 프로젝트에 런디캐스트 표(`lc_*`)가 있다 — `supabase/migrations/0005~0008_laundrycast*.sql`.
 **공유 DB 의 마이그레이션은 이 저장소에서만 관리**(이력이 두 저장소로 갈라지면 `db push` 가 멈춤). 런디캐스트 Edge Function
 코드는 `../laundrycast/supabase/functions/`, 설명은 `../laundrycast/docs/BACKEND.md`. cron 작업 `laundrycast-*` 3개.
 
