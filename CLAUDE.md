@@ -15,9 +15,9 @@
 
 ## 런디캐스트(laundrycast)와 DB 공유
 
-같은 Supabase 프로젝트에 런디캐스트 표(`lc_*`)가 있다 — `supabase/migrations/0005~0017`(런디캐스트 관련 파일).
+같은 Supabase 프로젝트에 런디캐스트 표(`lc_*`)가 있다 — `supabase/migrations/0005~0018`(런디캐스트 관련 파일).
 **공유 DB 의 마이그레이션은 이 저장소에서만 관리**(이력이 두 저장소로 갈라지면 `db push` 가 멈춤). 런디캐스트 Edge Function
-코드는 `../laundrycast/supabase/functions/`, 설명은 `../laundrycast/docs/BACKEND.md`. cron 작업 `laundrycast-*` 5개.
+코드는 `../laundrycast/supabase/functions/`, 설명은 `../laundrycast/docs/BACKEND.md`. cron 작업 `laundrycast-*` 6개.
 
 **런디캐스트는 이 콘솔에 붙이지 않는다** — 전용 콘솔 `../laundrycast-console/`(React)과 전용 표 `lc_notices`·`lc_app_config`·
 `lc_feedback`·`lc_events`·관리자 `lc_admins`(0017). 0015(공용 표에 붙이기)는 0016 으로 원복했다. 이 콘솔의 `admins`·`is_admin()` 은
